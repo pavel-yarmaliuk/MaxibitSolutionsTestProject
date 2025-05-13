@@ -84,12 +84,10 @@ class MessageTemplate:
 CHAT_ID_KEY = os.environ['CHAT_ID']
 TOKEN_KEY = os.environ['TELEGRAM_TOKEN']
 
-NOTIFY_MESSAGE = '''
-Идентификатор DAG: {DAG_NAME}. 
-Идентификатор задачи: ❌{TASK_ID}❌. 
-Дата и время выполнения задачи: {DATE}. 
-Ответственные лица: {USERS}
-'''
+NOTIFY_MESSAGE = ('Идентификатор DAG: {DAG_NAME}. \n'
+                  'Идентификатор задачи: ❌{TASK_ID}❌. \n'
+                  'Дата и время выполнения задачи: {DATE}. \n'
+                  'Ответственные лица: {USERS}\n')
 telegram_notification = TelegramNotification(
     chat_id=CHAT_ID_KEY,
     token=TOKEN_KEY,
