@@ -96,10 +96,13 @@ x-airflow-common:
 services:
   postgres:
     image: postgres:13
+    container_name: postgres_airflow_database
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
@@ -108,8 +111,74 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+  postgres_agg:
+    image: postgres:13
+    container_name: postgres_analytics_database
+    environment:
+      POSTGRES_USER: analytic
+      POSTGRES_PASSWORD: analytic
+      POSTGRES_DB: analytics_db
     ports:
-      - "5432:5432"
+      - "5431:5432"
+    volumes:
+      - postgres-agg-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "analytic", "-p", "5431" ]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+  postgres_project_a_host:
+    image: postgres:13
+    container_name: postgres_project_a_container
+    environment:
+      POSTGRES_USER: project_a_host
+      POSTGRES_PASSWORD: project_a_host
+      POSTGRES_DB: project_a_db
+    ports:
+      - "5430:5432"
+    volumes:
+      - postgres-project-a-host-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "project_a_host", "-p", "5430" ]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+  postgres_project_b_host:
+    image: postgres:13
+    container_name: postgres_project_b_container
+    environment:
+      POSTGRES_USER: project_b_host
+      POSTGRES_PASSWORD: project_b_host
+      POSTGRES_DB: project_b_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-project-b-host-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "project_b_host", "-p", "5435" ]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+  postgres_project_c_host:
+    image: postgres:13
+    container_name: postgres_project_c_container
+    environment:
+      POSTGRES_USER: project_c_host
+      POSTGRES_PASSWORD: project_c_host
+      POSTGRES_DB: project_c_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-project-c-host-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "project_c_host", "-p", "5436" ]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
@@ -357,3 +426,7 @@ services:
 volumes:
   postgres-db-volume:
   pgadmin-data:
+  postgres-agg-db-volume:
+  postgres-project-a-host-db-volume:
+  postgres-project-b-host-db-volume:
+  postgres-project-c-host-db-volume:

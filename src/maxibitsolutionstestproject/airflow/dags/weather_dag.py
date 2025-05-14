@@ -25,6 +25,7 @@ DT = datetime.now()
 def weather_dag():
     @task
     def processing_data_from_api_task(ti):
+        """Fetching data from API."""
         response: Response = ResponseProcessor.process(WAC.make_api_call())
         temperature_df = response.create_temperature_dataframe()
         wind_df = response.create_wind_dataframe()
@@ -33,6 +34,8 @@ def weather_dag():
 
     @task_group
     def concatenate_data():
+        """Concatenate existing data with current fetched data."""
+
         @task
         def concatenate_wind_dataframe(**kwargs):
             wind_dict = kwargs['ti'].xcom_pull(key='wind_df',
@@ -67,25 +70,27 @@ def weather_dag():
 
     @task_group
     def creating_parquets():
+        """Creating parquets from wind and temperature dataframe."""
+
         @task
         def create_wind_parquet(**kwargs) -> None:
             wind_dict = kwargs['ti'].xcom_pull(
                 key='concatenated_wind_df',
-                task_ids='concatenate_data.concatenate_wind_dataframe')
+                task_ids='concatenate_data.concatenate_wind_dataframe')  # pulling dict from xcom
             LOGGER.info(f'Pulling result...{wind_dict}')
             wind_df = pd.DataFrame.from_dict(wind_dict)
             path = f"{CURRENT_PATH}/wind_data/minsk_{DT.strftime('%Y_%m_%d')}_wind.parquet"
-            wind_df.to_parquet(path, index=False)
+            wind_df.to_parquet(path, index=False)  # storing data by path as parquet
 
         @task
         def create_temperature_parquet(**kwargs) -> None:
             temperature_dict = kwargs['ti'].xcom_pull(
                 key='concatenated_temperature_df',
-                task_ids='concatenate_data.concatenate_temperature_dataframe')
+                task_ids='concatenate_data.concatenate_temperature_dataframe')  # pulling dict from xcom
             LOGGER.info(f'Pulling result...{temperature_dict}')
             temperature_df = pd.DataFrame.from_dict(temperature_dict)
             path = f"{CURRENT_PATH}/temperature_data/minsk_{DT.strftime('%Y_%m_%d')}_temp.parquet"
-            temperature_df.to_parquet(path, index=False)
+            temperature_df.to_parquet(path, index=False)  # storing data by path as parquet
 
         create_wind_parquet()
         create_temperature_parquet()
